@@ -583,6 +583,31 @@ if {$method=="ExhaustiveSearch"} {
 
 		# Run elliptic solver
         FuncEval $dom $minParams 0
+
+	    # -------------------------------------
+	    # Calculate Variance
+	    # -------------------------------------
+        set count 0
+        while {$count<$maxGen} {
+
+            set mu($count)  0
+            set var($count) 0
+        
+            # Calculate expected value
+            for {set i 0} {$i<$NP} {incr i} {
+                set mu($count) [expr {(1.0/$NP)*$cost($count,$i)+$mu($count)}]
+            }
+
+            # Calculate expected squared deviation
+            for {set i 0} {$i<$NP} {incr i} {
+                set var($count) [expr {(1.0/$NP)*pow($cost($count,$i)-$mu($count),2)+$var($count)}]
+            }        
+
+            puts "Generation $count variance: $var($count)"
+
+            incr count
+
+        }
 	
 	
 		# -------------------------------------
@@ -593,8 +618,10 @@ if {$method=="ExhaustiveSearch"} {
 		puts "----------------------------------------------"
         puts "Method: Differential Evolution"
         puts ""
-		puts "Function evalutations: [expr {$maxGen*$NP}]"
-		puts "Solver iterations:     [lindex $minParams 0]"
+		puts "Function evalutations:     [expr {$maxGen*$NP}]"
+        puts "Generation optimum found:  $genF"
+		puts "Solver iterations:         [lindex $minParams 0]"
+        puts "Final generation variance: $var([expr {$maxGen-1}])"
 		puts ""
 		puts [format "Original max included angle:  %.2f deg" $origF]
 		puts [format "Optimized max included angle: %.2f deg" $minF]
